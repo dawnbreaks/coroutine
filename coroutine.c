@@ -28,7 +28,7 @@ struct coroutine {
 	struct schedule * sch;
 	ptrdiff_t cap;		// 已分配的stack内存大小
 	ptrdiff_t size;		//实际使用的stack内存大小
-	int status;
+	int status;			//COROUTINE_READY or COROUTINE_SUSPEND or COROUTINE_RUNNING
 	char *stack;
 };
 
