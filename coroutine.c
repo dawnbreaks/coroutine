@@ -15,10 +15,10 @@ struct coroutine;
 struct schedule {
 	char stack[STACK_SIZE];
 	ucontext_t main;
-	int nco;
-	int cap;
-	int running;
-	struct coroutine **co;
+	int nco;//number of coroutines
+	int cap;//max number of coroutines
+	int running;//running id of coroutine
+	struct coroutine **co;  //co ptr array
 };
 
 struct coroutine {
@@ -26,8 +26,8 @@ struct coroutine {
 	void *ud;
 	ucontext_t ctx;
 	struct schedule * sch;
-	ptrdiff_t cap;
-	ptrdiff_t size;
+	ptrdiff_t cap;		// 已分配的stack内存大小
+	ptrdiff_t size;		//实际使用的stack内存大小
 	int status;
 	char *stack;
 };
@@ -146,6 +146,12 @@ coroutine_resume(struct schedule * S, int id) {
 	}
 }
 
+/*
+调用_save_stack时，会压入argument C和top，return adress，还有caller的bp 寄存器（frame base ptr）
+所以实际copy的stack会比执行到coroutine_yield中的swapcontext行的stack大小大。但是没有关系，ucontext_t中的会保存所有寄存器的状态
+即执行到coroutine_yield中的swapcontext行的bp和sp寄存器有保存，
+恢复执行的时候的，拷贝的多余stack没有影响功能。
+ */
 static void
 _save_stack(struct coroutine *C, char *top) {
 	char dummy = 0;
